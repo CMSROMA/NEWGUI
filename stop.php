@@ -2,20 +2,59 @@
 <head>
 <title>Stopping acquisition...</title>
 
+</head>
+
+
+<body>
+
 <?php
+
+function isRunning($pid)
+{
+    try {
+        $result = shell_exec(sprintf('ps %d', $pid));
+        if(count(preg_split("/\n/", $result)) > 2) {
+            return true;
+        }
+    } catch(Exception $e) {}
+
+    return false;
+}
 
 date_default_timezone_set('Europe/Rome');
 $end_date = date('Y-m-d H:i:s');
 
+    $emulator = 0;
+    if( isset($_GET[emulator]) ) {
+
+      if( $_GET[emulator] == 1 ) {
+        echo "<font color=red size=large>ATTENTION: this is an emulator session!</font><br>";
+        $emulator = 1;
+      }
+    }
+
+   // define stop file
+
+   if( $emulator == 1 ) {
+     $daqhome = "/tmp/";
+   } else {
+     $daqhome = "/home/cmsdaq/DAQ/VMEDAQ/";
+   }
+
+   $stopfile = $daqhome . "/acq.stop";
+
   if( $_POST["endrun"] ) {
-   // create file to stop daq application
-   //touch("/Users/rahatlou/Sites/imcp/acq.stop");
-   touch("/tmp/acq.stop");
+
+  
+   //touch($stopfile);
+   exec("touch $stopfile", $output);
+   exec("chmod ug+w $stopfile", $output);
+   exec("chown www-data.www-data $stopfile", $output);
 
    $endrun = $_POST["endrun"];
+   $pid = $_POST["daqpid"];
 
-   echo "You have requested to end run $endrun for following reason:<br>";
-   echo $_POST["comment"];
+   echo "You have requested to end run $endrun with process id $pid <br>";
    echo "<br>";
    echo "stopping all running processes. please wait ... <br>";
   }
@@ -23,9 +62,14 @@ $end_date = date('Y-m-d H:i:s');
 ?>
 
 <p>
-<form action="DAQ.php" method="post">
 
-<?php if( file_exists("/tmp/acq.stop") ) { ?>
+<?php 
+
+    if( file_exists($stopfile) && isRunning($pid) ) { 
+
+
+?>
+
 
   <input type="button" value="Run <?php echo $endrun ?> in progress... please wait">
   <script>
@@ -38,33 +82,27 @@ $end_date = date('Y-m-d H:i:s');
 <?php 
 
      } else {
+       if( !isRunning($pid) ) {
+         echo "DAQ processed not running. check if run ended correctly<br>";
+         echo "Forcing removal of acq.stop<br>";
+       }
+
        $endDate = date('Y-m-d H:i:s');
        echo "run $endrun stopped at $endDate<br>";
 
 //echo "Run Stopped.";
-
-//Open the database
-
-$con=mysqli_connect("127.0.0.1","root","?cms?daq?2014","rundb_test_v1");
-// Check connection
-if (mysqli_connect_errno())
-  {
-  echo "Failed to connect to MySQL: " . mysqli_connect_error();
-  }
-
-//$risultato = mysqli_query($con, "SELECT MAX(run_number) FROM run");
-
-//$row = mysqli_fetch_row($risultato);
-//$highest_id = $row[0];
-
-mysqli_query($con, "UPDATE run SET run_endtime='$enddate' WHERE run_number='$endrun'");
-
-
 ?>
-  <input type="submit" value="Back to frontend">
+
+  <FORM METHOD="POST" ACTION="end.php?emulator=<?php echo $emulator;?>" NAME="end">
+  Reason for ending the run:<input name="fin_comment" size="250"><br>
+  <input type="hidden" name="endrun" value=<?php echo $run_num;?> />
+  <INPUT TYPE="SUBMIT" onclick=" return confirmFunc()" VALUE='End Run'>
+
 <?php } ?>
 
 </form>
 </p>
+
+</body>
 
 </html>

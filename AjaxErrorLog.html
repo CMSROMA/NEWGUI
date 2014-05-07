@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>Ajax Error Log</title>
+		<!-- Ajax Error Log @ http://perishablepress.com/ajax-error-log/ -->
+		<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+		<style>
+			pre {
+				font: 10px/1.5 Courier, "Courier New", mono;
+				background-color: #efefef; border: 1px solid #ccc;
+				width: 700px; margin: 7px; padding: 10px;
+				white-space: pre-wrap;
+				}
+		</style>
+		<!-- <script src="http://ajax.`googleapis.com/ajax/libs/jquery/1.3.0/jquery.min.js"></script> -->
+		<script src="jquery.min.js"></script>
+		<script>
+			$(document).ready(function() {
+				$("#results").load("AjaxErrorLog.php");
+				var refreshId = setInterval(function() {
+					$("#results").load("AjaxErrorLog.php").fadeIn("slow");
+				}, 2000); // refresh time (default = 2000 ms = 2 seconds)
+			});
+		</script>
+	</head>
+	<body>
+		<noscript><div id="response"><h1>JavaScript is required for this demo.</h1></div></noscript>
+		<div id="results"></div>
+	</body>
+</html>
