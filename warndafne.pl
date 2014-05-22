@@ -1,5 +1,11 @@
 #!/usr/bin/perl
 
+#
+# This script gets the current dafne status and predicts when electron beams
+# are going to disappear or to appear
+#
+# run this script on a computer having access to the WAN with sound on
+#
 $url = "http://www.lnf.infn.it/acceleratori/status/get_dafne.php?get_par=0";
 
 $oldline = "";
