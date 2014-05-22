@@ -1,512 +1,506 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
 <html> 
   <head>
-    <title>DAQ Frontend for CeFe3 Testbeam at BTF</title>
+    <link href="style.css" rel="stylesheet" type="text/css">
+    <title>DAQ Frontend for CMS Testbeams at BTF</title>
+    <script src="jquery.min.js"></script>
+    <script>
+      $(document).ready(function() {
+      $("#results").load("AjaxErrorLog.php");
+      var refreshId = setInterval(function() {
+      $("#results").load("AjaxErrorLog.php").fadeIn("slow");
+      }, 2000); // refresh time (default = 2000 ms = 2 seconds)
+      });
+    </script>
+
+    <meta http-equiv="refresh" content="300">
+
   </head>
   
-  <body bgcolor="#FFFFFF" marginwidth="0" marginheight="0" leftmargin="0" topmargin="0" onLoad="self.focus();document.Qfrm.what.focus()">
+  <body bgcolor="#FFFFFF" marginwidth="0" marginheight="0" leftmargin="0" topmargin="0" onLoad="draw();">
     
-    <table width="100%"  height="88"border="0" cellpadding="0" cellspacing="0">
-      <tr><td valign="bottom">
+    <table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <tr><td nowrap valign="bottom">
 	  
-	  <STRONG><font size="10"><font color=#00000000>DAQ Frontend for CeFe3 Testbeam at BTF</font></STRONG></br>
+	  <STRONG><font size="10"><font color=#00000000>DAQ Frontend for MCP Testbeam at BTF</font></STRONG></br>
     </table>
-    
-    
 </td></tr>
 <hr>
 
-<?php
-   unlink("/home/cmsdaq/DAQ/VMEDAQ/acq.stop");
-   $con=mysqli_connect("127.0.0.1","root","?cms?daq?2014","rundb_v1");
-   $risultato = mysqli_query($con, "SELECT MAX(run_number) FROM run");
-   $row = mysqli_fetch_row($risultato);
-   $highest_id = $row[0];
-   echo "The last run was number: $highest_id <br>";
+<script src="jquery.min.js"></script>
 
-   $last_daq_id=mysqli_fetch_row(mysqli_query($con,"SELECT run_daq_id FROM run WHERE run_number=$highest_id"));
-
-   $daq_query=mysqli_fetch_row(mysqli_query($con,"SELECT daq_type_description FROM daq_configuration WHERE daq_conf_id=$last_daq_id[0]"));
-
-   $daq_gate1=mysqli_fetch_row(mysqli_query($con,"SELECT daq_user_gate1_ns FROM daq_configuration WHERE daq_conf_id=$last_daq_id[0]"));
-
-   $daq_gate2=mysqli_fetch_row(mysqli_query($con,"SELECT daq_user_gate2_ns FROM daq_configuration WHERE daq_conf_id=$last_daq_id[0]"));
-
-
-
-if(strpos($daq_query[0], 'ADC265')!== false){
-
-$adc265b=1;
-
-}else{
-$adc265b=0;
-
+<script language='JavaScript'>
+function play_horse() {
+        var audioElement = document.createElement('audio');
+        audioElement.setAttribute('src', 'horse.mp3');
+        audioElement.setAttribute('autoplay', 'autoplay');
+        audioElement.load();
+        audioElement.play();
 }
 
-
-if(strpos($daq_query[0],'ADC792')!== false){
-
-$adc792b=1;
-
-}else{
-$adc792b=0;
+function areyousurestart() {
+   var type = document.getElementById('tend').value;
+   if (type.indexOf("Choose") >= 0) {
+      alert("Choose a run type");
+      return false;
+   } 
+   return true;
 }
 
-if(strpos($daq_query[0],'TDC')!==false){
+function enable() {
+  //
+  // enable detector elements
+  //
+  var f = 1;
 
-$tdcb=1;
+  var cathode_title="cath";
+  var hv_title= "hv";
 
-}else{
-$tdcb=0;
+  var numero = document.getElementById("detector_elements").value;
+  while (f <= numero) {
+       var idcheck = 'checkbox' + f;
+       var idpos = 'pos_' + f;
+       var idname = 'name' + f;
+       var idhv = 'hv_' + f;
+       var idcath = 'cath_' + f;
+       var ischecked = document.getElementById(idcheck).checked;
+       if (ischecked) {
+	  document.getElementById(idpos).disabled = false;
+	  document.getElementById(idhv).disabled = false;
+	  document.getElementById(idcath).disabled = false;
+       } else {
+	  document.getElementById(idpos).disabled = true;
+	  document.getElementById(idhv).disabled = true;
+	  document.getElementById(idcath).disabled = true;
+       }
+       f++;
+  }
 }
 
-if(strpos($daq_query[0],'Digitizer')!==false){
-$digb=1;
-
-}else{
-$digb=0;
-
-}
-
-
-   while ($highest_id>0) {
-     $prova = mysqli_fetch_row(mysqli_query($con, "SELECT run_type_id FROM run WHERE run_number='$highest_id'"));
-     $beam=mysqli_fetch_row(mysqli_query($con, "SELECT run_type_description FROM run_type WHERE run_type_id='$prova[0]'"));
-     if($beam[0]=='beam'){
-       break;
-     }
-
-     $highest_id--;
+function sel() {
+  //
+  // remove useless fields
+  //
+  var option = document.getElementById('tend').value;
+  var i = 1;
+  var j = 0;
+  while (i < document.getElementById('run_types').value + 1) {
+    var hidden_name = 'run_description_' + i;
+    var hidden_value = document.getElementById(hidden_name).value;
+    if (hidden_value == option) {
+      j = i;
+      i = document.getElementById('run_types').value + 1;
+    }
+    i++;
+  }
+  var elements = ["n_of_events", "thp", "tvp", "beam_energy", "beam_intensity",
+	     "beam_hw", "beam_vw", "beam_ht", "beam_vt"];
+  for (var k = 0; k < elements.length; k++) {
+    var id = elements[k] + "_" + j;
+    var v = document.getElementById(id);
+    if (v != null) {
+      document.getElementById(elements[k]).value = document.getElementById(id).value;
+    }
+  }
+  document.getElementById("daq_gate1").value = document.getElementById("daq_gate1_").value;
+  document.getElementById("daq_gate2").value = document.getElementById("daq_gate2_").value;
+  var particles = ["electron", "positron", "photon"];
+  var particle = document.getElementById("beam_particle").value;
+  for (var k = 0; k < particles.length; k++) {
+    if (particle == particles[k]) {
+      document.getElementById(particle).checked = true;
+    }
   }
 
-  $beam_num=mysqli_fetch_row(mysqli_query($con, "SELECT run_nevents FROM run WHERE run_number='$highest_id'"));
-  $beam_ht=mysqli_fetch_row(mysqli_query($con, "SELECT table_horizontal_position FROM run WHERE run_number='$highest_id'"));
-  $beam_vt=mysqli_fetch_row(mysqli_query($con, "SELECT table_vertical_position FROM run WHERE run_number='$highest_id'"));
-  $b_id=mysqli_fetch_row(mysqli_query($con, "SELECT run_beam_id FROM run WHERE run_number='$highest_id'"));
-  $b_energy=mysqli_fetch_row(mysqli_query($con, "SELECT beam_energy FROM beam_configuration WHERE beam_conf_id='$b_id[0]'"));
-  $b_intensity=mysqli_fetch_row(mysqli_query($con, "SELECT beam_intensity FROM beam_configuration WHERE beam_conf_id='$b_id[0]'"));
-  $b_hw=mysqli_fetch_row(mysqli_query($con, "SELECT beam_horizontal_width FROM beam_configuration WHERE beam_conf_id='$b_id[0]'"));
-  $b_vw=mysqli_fetch_row(mysqli_query($con, "SELECT beam_vertical_width FROM beam_configuration WHERE beam_conf_id='$b_id[0]'"));
-  $b_htb=mysqli_fetch_row(mysqli_query($con, "SELECT beam_horizontal_tilt FROM beam_configuration WHERE beam_conf_id='$b_id[0]'"));
-  $b_vtb=mysqli_fetch_row(mysqli_query($con, "SELECT beam_vertical_tilt FROM beam_configuration WHERE beam_conf_id='$b_id[0]'"));
-
-  $b_particle=mysqli_fetch_row(mysqli_query($con, "SELECT beam_particle FROM beam_configuration WHERE beam_conf_id='$b_id[0]'"));
-
-
-    
-$risultato = mysqli_query($con, "SELECT MAX(run_number) FROM run");
-$row = mysqli_fetch_row($risultato);
-$highest_id = $row[0];
-
-       while($highest_id>0){
-$prova= mysqli_fetch_row(mysqli_query($con, "SELECT run_type_id FROM
-    run WHERE run_number='$highest_id'"));
-
-$ped=mysqli_fetch_row(mysqli_query($con, "SELECT run_type_description
-    FROM run_type WHERE run_type_id='$prova[0]'"));
-if(strpos($ped[0],'pedestal') !== false){
-break;
+  for (var i = 0; i < 4; i++) {
+     var rowindex = i + 1;
+     var row = 'beam_info_' + rowindex;
+     if (option.indexOf("beam") >= 0) {
+        document.getElementById(row).style.display = '';
+     } else {
+        document.getElementById(row).style.display = 'none';
+     }
+  }
 }
-   
-    
-$highest_id--;
-    
+
+function draw() {
+  //
+  // draw detector configuration
+  //
+  enable();
+
+  var obj = document.getElementById("detector_elements");
+  if (obj != null) {
+    var numero = obj.value;
+    var positions = [];
+    for (var i = 0; i < numero; i++) {
+      var f = i + 1;
+      var idcheck = 'checkbox' + f;
+      var ischecked = document.getElementById(idcheck).checked;
+      if (ischecked) {
+         var idpos = 'pos_' + f;
+         var posvalue = document.getElementById(idpos).value;
+         positions.push(posvalue);
+      }
     }
-
-  $ped_num=mysqli_fetch_row(mysqli_query($con, "SELECT run_nevents FROM run WHERE run_number='$highest_id'"));
-  $ped_ht=mysqli_fetch_row(mysqli_query($con, "SELECT table_horizontal_position FROM run WHERE run_number='$highest_id'"));
-  $ped_vt=mysqli_fetch_row(mysqli_query($con, "SELECT table_vertical_position FROM run WHERE run_number='$highest_id'"));
-
-
-$risultato = mysqli_query($con, "SELECT MAX(run_number) FROM run");
-$row = mysqli_fetch_row($risultato);
-$highest_id = $row[0];
-
-       while($highest_id>0){
-$prova= mysqli_fetch_row(mysqli_query($con, "SELECT run_type_id FROM
-    run WHERE run_number='$highest_id'"));
-
-$cosm=mysqli_fetch_row(mysqli_query($con, "SELECT run_type_description
-    FROM run_type WHERE run_type_id='$prova[0]'"));
-if($cosm[0]=='cosmic'){
-break;
+    positions.sort(function(a,b){return a-b});
+    var str= "<table class='setup'><tr>";
+    for (var i = 0; i < positions.length; i++) {
+       var j = 0;
+       while (j < numero) {
+         var k = j + 1;
+         var idpos = 'pos_' + k;
+         var posvalue = document.getElementById(idpos).value;
+         var idname = 'name' + k;
+         var namevalue = document.getElementById(idname).innerHTML;
+         var idhv = 'hv_' + k;
+         if (posvalue == positions[i]) {
+            if (namevalue.indexOf("Absorber") >= 0) {
+               str += "<td style='background-color: #C96333;'>";
+            } else if (namevalue.indexOf("Plexiglass") >= 0) {
+               str += "<td style='background-color: #3399CC;'>";
+            } else {
+               str += "<td>";
+            }
+            str += namevalue + "<br>" + posvalue + "</td>";
+         }
+         j++;
+       }
     }
-    
-    
-$highest_id--;
-    
-    }
-
-  $cosm_num=mysqli_fetch_row(mysqli_query($con, "SELECT run_nevents FROM run WHERE run_number='$highest_id'"));
-  $cosm_ht=mysqli_fetch_row(mysqli_query($con, "SELECT table_horizontal_position FROM run WHERE run_number='$highest_id'"));
-  $cosm_vt=mysqli_fetch_row(mysqli_query($con, "SELECT table_vertical_position FROM run WHERE run_number='$highest_id'"));
-
-
-$risultato = mysqli_query($con, "SELECT MAX(run_number) FROM run");
-$row = mysqli_fetch_row($risultato);
-$highest_id = $row[0];
-
-       while($highest_id>0){
-$prova= mysqli_fetch_row(mysqli_query($con, "SELECT run_type_id FROM
-    run WHERE run_number='$highest_id'"));
-
-$na=mysqli_fetch_row(mysqli_query($con, "SELECT run_type_description
-    FROM run_type WHERE run_type_id='$prova[0]'"));
-if($na[0]=='Na source'){
-break;
-    }
-    
-    
-$highest_id--;
-    
-    }
-
-  $na_num=mysqli_fetch_row(mysqli_query($con, "SELECT run_nevents FROM run WHERE run_number='$highest_id'"));
-  $na_ht=mysqli_fetch_row(mysqli_query($con, "SELECT table_horizontal_position FROM run WHERE run_number='$highest_id'"));
-  $na_vt=mysqli_fetch_row(mysqli_query($con, "SELECT table_vertical_position FROM run WHERE run_number='$highest_id'"));
-
-$risultato = mysqli_query($con, "SELECT MAX(run_number) FROM run");
-$row = mysqli_fetch_row($risultato);
-$highest_id = $row[0];
-
-       while($highest_id>0){
-$prova= mysqli_fetch_row(mysqli_query($con, "SELECT run_type_id FROM
-    run WHERE run_number='$highest_id'"));
-
-$sr=mysqli_fetch_row(mysqli_query($con, "SELECT run_type_description
-    FROM run_type WHERE run_type_id='$prova[0]'"));
-if($sr[0]=='Sr source'){
-break;
-    }
-    
-    
-$highest_id--;
-    
-    }
-
-  $sr_num=mysqli_fetch_row(mysqli_query($con, "SELECT run_nevents FROM run WHERE run_number='$highest_id'"));
-  $sr_ht=mysqli_fetch_row(mysqli_query($con, "SELECT table_horizontal_position FROM run WHERE run_number='$highest_id'"));
-  $sr_vt=mysqli_fetch_row(mysqli_query($con, "SELECT table_vertical_position FROM run WHERE run_number='$highest_id'"));
-
-
-?>
-
-<!-- buffer for data from DB -->
-<input type="hidden" id="ped_num" VALUE="<?php echo "$ped_num[0]";?>">
-<input type="hidden" id="ped_ht" VALUE="<?php echo "$ped_ht[0]";?>">
-<input type="hidden" id="ped_vt" VALUE="<?php echo "$ped_vt[0]";?>">
-<input type="hidden" id="cosm_num" VALUE="<?php echo "$cosm_num[0]";?>">
-<input type="hidden" id="cosm_ht" VALUE="<?php echo "$cosm_ht[0]";?>">
-<input type="hidden" id="cosm_vt" VALUE="<?php echo "$cosm_vt[0]";?>">
-<input type="hidden" id="na_num" VALUE="<?php echo "$na_num[0]";?>">
-<input type="hidden" id="na_ht" VALUE="<?php echo "$na_ht[0]";?>">
-<input type="hidden" id="na_vt" VALUE="<?php echo "$na_vt[0]";?>">
-<input type="hidden" id="sr_num" VALUE="<?php echo "$sr_num[0]";?>">
-<input type="hidden" id="sr_ht" VALUE="<?php echo "$sr_ht[0]";?>">
-<input type="hidden" id="sr_vt" VALUE="<?php echo "$sr_vt[0]";?>">
-<input type="hidden" id="beam_num" VALUE="<?php echo "$beam_num[0]";?>">
-<input type="hidden" id="beam_ht" VALUE="<?php echo "$beam_ht[0]";?>">
-<input type="hidden" id="beam_vt" VALUE="<?php echo "$beam_vt[0]";?>">
-<input type="hidden" id="beam_en" VALUE="<?php echo "$b_energy[0]";?>">
-<input type="hidden" id="beam_intensity" VALUE="<?php echo "$b_intensity[0]";?>">
-<input type="hidden" id="beam_hw" VALUE="<?php echo "$b_hw[0]";?>">
-<input type="hidden" id="beam_vw" VALUE="<?php echo "$b_vw[0]";?>">
-<input type="hidden" id="beam_htb" VALUE="<?php echo "$b_htb[0]";?>">
-<input type="hidden" id="beam_vtb" VALUE="<?php echo "$b_vtb[0]";?>">
-    
-
-
-<input type="hidden" id="265hid" value="<?php echo "$adc265b"?>">
-<input type="hidden" id="792hid" value="<?php echo "$adc792b"?>">
-<input type="hidden" id="tdchid" value="<?php echo "$tdcb"?>">
-<input type="hidden" id="dighid" value="<?php echo "$digb"?>">
-<input type="hidden" id="beam_p" value="<?php echo "$b_particle[0]"?>">
-<input type="hidden" id="gate1" value="<?php echo "$daq_gate1[0]"?>">
-<input type="hidden" id="gate2" value="<?php echo "$daq_gate2[0]"?>">
-
-
-<SCRIPT LANGUAGE="JavaScript">
-
-function sel(){
-   
-document.getElementById("daq1").value=document.getElementById("gate1").value;
-document.getElementById("daq2").value=document.getElementById("gate2").value;
-
-if(document.getElementById("265hid").value==1){
-document.Qfrm.adc265.checked=true;
+    str += "</tr></table>";
+    document.getElementById("setup").innerHTML = str;
+  }
 }
+</script>
 
-if(document.getElementById("792hid").value==1){
-document.Qfrm.adc792.checked=true;
-}
-
-if(document.getElementById("tdchid").value==1){
-document.Qfrm.tdc.checked=true;
-}
-
-if(document.getElementById("dighid").value==1){
-document.Qfrm.digitizer.checked=true;
-}
-var tend= document.getElementById("tend").value;
-
-var n=tend.indexOf("pedestal");
-
-if(n!=-1){
-document.getElementById("namebox").value=document.getElementById("ped_num").value;
-document.getElementById("namebox1").value=document.getElementById("ped_ht").value;
-document.getElementById("namebox2").value=document.getElementById("ped_vt").value;
-
-}
-if(tend=='cosmics'){
-document.getElementById("namebox").value=document.getElementById("cosm_num").value;
-document.getElementById("namebox1").value=document.getElementById("cosm_ht").value;
-document.getElementById("namebox2").value=document.getElementById("cosm_vt").value;
-
-
-}
-if(tend=='Na source'){
-document.getElementById("namebox").value=document.getElementById("na_num").value;
-document.getElementById("namebox1").value=document.getElementById("na_ht").value;
-document.getElementById("namebox2").value=document.getElementById("na_vt").value;
-
-
-}
-if(tend=='Sr source'){
-document.getElementById("namebox").value=document.getElementById("sr_num").value;
-document.getElementById("namebox1").value=document.getElementById("sr_ht").value;
-document.getElementById("namebox2").value=document.getElementById("sr_vt").value;
-
-
-}
-
-if(tend=='beam'){
-
-if(document.getElementById("beam_p").value=='electron'){
-document.Qfrm.electr.checked=true;
-}else{
-document.Qfrm.electr.checked=false;
-}
-if(document.getElementById("beam_p").value=='positron'){
-document.Qfrm.positr.checked=true;
-}else{
-document.Qfrm.positr.checked=false;
-}
-if(document.getElementById("beam_p").value=='photon'){
-document.Qfrm.photon.checked=true;
-}else{
-document.Qfrm.photon.checked=false;
-}
-
-document.getElementById("namebox").value=document.getElementById("beam_num").value;
-document.getElementById("namebox1").value=document.getElementById("beam_ht").value;
-document.getElementById("namebox2").value=document.getElementById("beam_vt").value;
-document.getElementById("energy").value=document.getElementById("beam_en").value;
-document.getElementById("intensity").value=document.getElementById("beam_intensity").value;
-document.getElementById("bhw").value=document.getElementById("beam_hw").value;
-document.getElementById("bvw").value=document.getElementById("beam_vw").value;
-document.getElementById("bht").value=document.getElementById("beam_htb").value;
-document.getElementById("bvt").value=document.getElementById("beam_vtb").value;
-
-document.Qfrm.nome.disabled=false;
-document.Qfrm.nome1.disabled=false;
-document.Qfrm.nome2.disabled=false;
-document.Qfrm.nome3.disabled=false;
-document.Qfrm.nome4.disabled=false;
-document.Qfrm.nome5.disabled=false;
-document.Qfrm.electr.disabled=false;
-document.Qfrm.positr.disabled=false;
-document.Qfrm.photon.disabled=false;
-
-    }else{
-    document.Qfrm.nome.disabled=true;
-    document.Qfrm.nome1.disabled=true;
-    document.Qfrm.nome2.disabled=true;
-    document.Qfrm.nome3.disabled=true;
-    document.Qfrm.nome4.disabled=true;
-    document.Qfrm.nome5.disabled=true;
-    document.Qfrm.electr.disabled=true;
-    document.Qfrm.positr.disabled=true;
-    document.Qfrm.photon.disabled=true;
-
-    }
-
-}
-
-
-    function confirmFunc() {
-    //First characteristics of the run
-    var num = document.getElementById("namebox").value;
-    var hpos = document.getElementById("namebox1").value;
-    var vpos = document.getElementById("namebox2").value;
-
-    //Decision for the run type
-    var tend =document.getElementById("tend").value;
-    
-
-   //Beam characteristics
-   var en = document.getElementById("energy").value;
-   var hwidth = document.getElementById("bhw").value;
-   var vwidth = document.getElementById("bvw").value;
-   var htilt = document.getElementById("bht").value;
-   var vtilt = document.getElementById("bvt").value;
-   var intens = document.getElementById("intensity").value;
-   var el_button=document.getElementById("el_box").checked;
-   var pos_button=document.getElementById("pos_box").checked;
-   var phot_button=document.getElementById("ph_box").checked;
-   var adc1_button=document.getElementById("265box").checked;
-   var adc2_button=document.getElementById("792box").checked;
-   var tdc_button=document.getElementById("tdcbox").checked;
-   var dig_button=document.getElementById("dig_box").checked;
-
-//Controlling fields
-
-if(adc1_button==false && adc2_button==false && tdc_button==false && dig_button==false){
-var daq_con_contr='problem';
-
-}else{
-
-var daq_con_contr='';
-
-}
-
-if(tend=='beam'){
-if(el_button==false && pos_button==false && phot_button==false){
-
-var b_conf= 'b_problem';
-}else{
-
-var b_conf='';
-}
-}
-
-if(num=='' || hpos=='' || vpos=='' || en=='' || hwidth=='' || vwidth=='' || htilt=='' || vtilt=='' || intens=='' || daq_con_contr=='problem' || b_conf=='b_problem'){
-alert("Attention!! At least one field is empty!");
-return false;
-}
-
-if(adc1_button==true){
-adc1_button='ON';}else adc1_button='OFF';
-if(adc2_button==true){
-adc2_button='ON';}else adc2_button='OFF';
-if(tdc_button==true){
-tdc_button='ON';}else tdc_button='OFF';
-if(dig_button==true){
-dig_button='ON';}else dig_button='OFF';
-
-
-    if(tend=='beam'){
-if(el_button==true){
-var part= 'electron';
-
-}
-
-if(pos_button==true){
-var part='positron';
-
-}
-
-if(phot_button==true){
-    var part='photon';
- }
-
-var sic = confirm("Do you really want to launch an acquisition?\nRUN RECAP:\nNumber of events: "+ num + ";\nTable horizontal position: " + hpos + " mm;\nTable vertical position: " + vpos + " mm;\nDAQ config:\nADC265: " + adc1_button +"; ADC792: "+ adc2_button +"\nTDC: "+ tdc_button +"; Digitizer: "+ dig_button  +".\nRun type: Beam.\nBEAM RECAP:\nParticle: "+part+";\nEnergy: " + en +" MeV;\nIntensity: " + intens +";\nH width: " + hwidth + " mm;\nV width: " + vwidth + " mm;\nH tilt: " + htilt +"\xB0;\nV tilt: " + vtilt + "\xB0.");
-
-}
-else{ 
-        var sic = confirm("Do you really want to launch an acquisition?\nRUN RECAP:\nNumber of events: "+ num + ";\nTable horizontal position: " + hpos + " mm;\nTable vertical position: " + vpos + " mm;\nDAQ config:\nADC265: " + adc1_button +"; ADC792: "+ adc2_button +"\nTDC: "+ tdc_button +"; Digitizer: "+ dig_button  +".\nRun type: " + tend + ".");
-
-   }
-     
-
-      
-    if (sic == true){
-    
-    return true;
-    }else{
-    return false; 
-    }
-    
-}
-    
-</SCRIPT>
+<FORM METHOD="POST" ACTION="DAQ.php" NAME="Qfrm">
 
 <?php
 
-$emulator = 0;
-
-if( isset($_GET[emulator]) ) {
-   if( $_GET[emulator] == "yes" || $_GET[emulator] == 1 ) {
-    echo "<font color=red size=huge>ATTENTION: this is an emulator session! No real run will be recorded</font><br>";
-
-    $emulator = 1;
+   include './global_variables.php';
+   $con = mysqli_connect("127.0.0.1",$dbuser,$dbpass,$dbname);
+   $comment = "";
+   if ($config[emulator] == 1) {
+     $comment = "EMULATOR: ";
+     echo "<INPUT TYPE='hidden' NAME='emulator' VALUE='1'/>";
    }
-}
 
+   $status = $_POST["button"];
+   $server = $_SERVER["REMOTE_ADDR"];
+
+   if (file_exists($config[acqstart])) {
+     $start_server = file_get_contents($config[acqstart]);
+   } else if (file_exists($config[acqpause])) {
+     $start_server = file_get_contents($config[acqpause]);
+   } else {
+     $start_server = $server;
+   }
+   
+   if ($status == "START") {
+     // the run can start
+     file_put_contents($config[acqstart], $server);
+     echo "<audio controls autoplay='autoplay' style='display: none'>";
+     echo "<source src='tada.mp3' type='audio/mpeg'>";
+     echo "</audio>";
+     start();
+   } else if ($status == "STOP RUN") {
+     if ($server == $start_server) {
+       if (file_exists($config[acqstart])) {
+         unlink($config[acqstart]);
+       }
+       if (file_exists($config[acqpause])) {
+         unlink($config[acqpause]);
+       }
+       file_put_contents($config[acqstop], $server);
+       stop();
+     }
+   } else if ($status == "PAUSE RUN") {
+     if ($server == $start_server) {
+       if (file_exists($config[acqstart])) {
+         unlink($config[acqstart]);
+       }
+       file_put_contents($config[acqpause], $server);
+     }
+   } else if ($status == "RESTART RUN") {
+     if ($server == $start_server) {
+       if (file_exists($config[acqstart])) {
+         unlink($config[acqpause]);
+       }
+       file_put_contents($config[acqstart], $server);
+     }
+   } else if ($status == "GIVE UP") {
+     if (file_exists($config[acqstart])) {       
+       file_put_contents($config[acqstart], "NULL");
+     }
+     if (file_exists($config[acqpause])) {       
+       file_put_contents($config[acqpause], "NULL");
+     }
+     $start_server = "NULL";
+   } else if ($status == "TAKE OVER") {
+     if ($start_server == "NULL") {
+       if (file_exists($config[acqstart])) {
+         file_put_contents($config[acqstart], $server);
+         $start_server = $server;
+       }
+       if (file_exists($config[acqpause])) {
+         file_put_contents($config[acqpause], $server);
+         $start_server = $server;
+       }
+     }
+   }
+
+   echo "You are connected from $server: the control is taken by $start_server ";
+   //
+   // get the current status of the run
+   //
+   $more = "";
+   if ($config[emulator] == 1) {
+     $more = " <B><font color='blue'>[EMULATION MODE]</font></B>";
+   }
+   if (file_exists($config[acqstart])) {
+     $status = "started";
+     echo "<FONT COLOR='green'>RUN STARTED</FONT>$more<BR>";
+   } else if (file_exists($config[acqpause])) {
+     $status = "paused";
+     echo "<FONT COLOR='orange'>RUN PAUSED</FONT>$more<BR>";
+   } else {
+     $status = "stopped";
+     echo "<FONT COLOR='red'>RUN STOPPED</FONT>$more<BR>";
+   }
+   
+   //
+   // set default values
+   //
+   $adc265 = "checked";
+   $adc792 = "";
+   $tdc    = "";
+   $dig    = "";
+
+   $num_events = 1000;
+   $table_h = 500;
+   $table_v = 500;
+   $daq_gate1 = 250;
+   $daq_gate2 = 1000;
+
+   $electron = "checked";
+   $positron = "";
+   $photon = "";
+
+   $beam_energy = 450;
+   $beam_intensity = 2;
+   $beam_hw = 10;
+   $beam_vw = 10;
+   $beam_ht = 0;
+   $beam_vt = 0;
+
+   //
+   // try to connect to the DB to get the last configurations
+   //
+   if ($con == null) {
+     echo "Cannot connect to the DB: please inform the DB coordinator.";
+   } else {
+     $highest_id = mysqli_fetch_row(mysqli_query($con, "SELECT MAX(run_number) FROM run"))[0];
+     $run_types = mysqli_fetch_row(mysqli_query($con, "SELECT MAX(run_type_id) FROM run_type"))[0];
+     $daq_configuration = mysqli_fetch_row(mysqli_query($con, "SELECT daq_type_description FROM daq_configuration WHERE daq_conf_id = (SELECT run_daq_id FROM run WHERE run_number = $highest_id)"))[0];
+     $daq_gate1 = mysqli_fetch_row(mysqli_query($con, "SELECT daq_user_gate1_ns FROM daq_configuration WHERE daq_conf_id = (SELECT run_daq_id FROM run WHERE run_number = $highest_id)"))[0];
+     $daq_gate2 = mysqli_fetch_row(mysqli_query($con, "SELECT daq_user_gate2_ns FROM daq_configuration WHERE daq_conf_id = (SELECT run_daq_id FROM run WHERE run_number = $highest_id)"))[0];
+     
+     for ($i = 0; $i < $run_types; $i++) {
+       $rt = $i + 1;
+       $run_description = mysqli_fetch_row(mysqli_query($con, "SELECT run_type_description FROM run_type WHERE run_type_id = $rt"))[0];
+       $max_run_number = mysqli_fetch_row(mysqli_query($con, "SELECT MAX(run_number) FROM run WHERE run_type_id = $rt"))[0];
+       echo "<INPUT TYPE='hidden' ID='run_description_$rt' VALUE='$run_description'/>";
+       echo "<INPUT TYPE='hidden' ID='max_run_number_$rt' VALUE='$max_run_number'/>";
+       if ($max_run_number != NULL) {
+         $n_of_events = mysqli_fetch_row(mysqli_query($con, "SELECT run_nevents FROM run WHERE run_number = $max_run_number"))[0];
+         $thp = mysqli_fetch_row(mysqli_query($con, "SELECT table_horizontal_position FROM run WHERE run_number = $max_run_number"))[0];
+         $tvp = mysqli_fetch_row(mysqli_query($con, "SELECT table_vertical_position FROM run WHERE run_number = $max_run_number"))[0];
+         $daq_id = mysqli_fetch_row(mysqli_query($con, "SELECT run_daq_id FROM run WHERE run_number = $max_run_number"))[0];
+         echo "<INPUT TYPE='hidden' ID='n_of_events_$rt' VALUE='$n_of_events'/>";
+         echo "<INPUT TYPE='hidden' ID='thp_$rt' VALUE='$thp'/>";
+         echo "<INPUT TYPE='hidden' ID='tvp_$rt' VALUE='$tvp'/>";
+         echo "<INPUT TYPE='hidden' ID='daq_id_$rt' VALUE='$daq_id'/>";
+         if (strpos($run_description, 'beam') !== false) {
+           $beam_energy = mysqli_fetch_row(mysqli_query($con, "SELECT beam_energy FROM beam_configuration WHERE beam_conf_id = (SELECT run_beam_id FROM run WHERE run_number = $max_run_number)"))[0];
+           $beam_intensity = mysqli_fetch_row(mysqli_query($con, "SELECT beam_intensity FROM beam_configuration WHERE beam_conf_id = (SELECT run_beam_id FROM run WHERE run_number = $max_run_number)"))[0];
+           $beam_hw = mysqli_fetch_row(mysqli_query($con, "SELECT beam_horizontal_width FROM beam_configuration WHERE beam_conf_id = (SELECT run_beam_id FROM run WHERE run_number = $max_run_number)"))[0];
+           $beam_vw = mysqli_fetch_row(mysqli_query($con, "SELECT beam_vertical_width FROM beam_configuration WHERE beam_conf_id = (SELECT run_beam_id FROM run WHERE run_number = $max_run_number)"))[0];
+           $beam_ht = mysqli_fetch_row(mysqli_query($con, "SELECT beam_horizontal_tilt FROM beam_configuration WHERE beam_conf_id = (SELECT run_beam_id FROM run WHERE run_number = $max_run_number)"))[0];
+           $beam_vt = mysqli_fetch_row(mysqli_query($con, "SELECT beam_vertical_tilt FROM beam_configuration WHERE beam_conf_id = (SELECT run_beam_id FROM run WHERE run_number = $max_run_number)"))[0];
+           $beam_particle = mysqli_fetch_row(mysqli_query($con, "SELECT beam_particle FROM beam_configuration WHERE beam_conf_id = (SELECT run_beam_id FROM run WHERE run_number = $max_run_number)"))[0];
+         }
+         echo "<INPUT TYPE='hidden' ID='beam_energy' VALUE='$beam_energy' />";
+         echo "<INPUT TYPE='hidden' ID='beam_intensity' VALUE='$beam_intensity' />";
+         echo "<INPUT TYPE='hidden' ID='beam_hw' VALUE='$beam_hw' />";
+         echo "<INPUT TYPE='hidden' ID='beam_vw' VALUE='$beam_vw' />";
+         echo "<INPUT TYPE='hidden' ID='beam_ht' VALUE='$beam_ht' />";
+         echo "<INPUT TYPE='hidden' ID='beam_vt' VALUE='$beam_vt' />";
+         echo "<INPUT TYPE='hidden' ID='beam_particle' VALUE='$beam_particle' />";
+       }
+     } 
+     echo "<INPUT TYPE='hidden' ID='run_types' VALUE='$run_types'/>";    
+     echo "<INPUT TYPE='hidden' ID='daq_gate1_' VALUE='$daq_gate1'/>";    
+     echo "<INPUT TYPE='hidden' ID='daq_gate2_' VALUE='$daq_gate2'/>";    
+     if (strpos($daq_configuration, 'ADC265') !== false) {
+	 echo "<INPUT TYPE='hidden' ID='adc265' NAME='adc265' VALUE='checked'/>";
+     } else {
+	 echo "<INPUT TYPE='hidden' ID='adc265' NAME='adc265' VALUE=''/>";
+     }
+     if (strpos($daq_configuration, 'ADC792') !== false) {
+	 echo "<INPUT TYPE='hidden' ID='adc792' NAME='adc792' VALUE='checked'/>";
+     } else {
+	 echo "<INPUT TYPE='hidden' ID='adc792' NAME='adc792' VALUE=''/>";
+     }
+     if (strpos($daq_configuration, 'TDC') !== false) {
+	 echo "<INPUT TYPE='hidden' ID='tdc' NAME='tdc' VALUE='checked'/>";
+     } else {
+	 echo "<INPUT TYPE='hidden' ID='tdc' NAME='tdc' VALUE=''/>";
+     }
+     if (strpos($daq_configuration, 'Digitizer') !== false) {
+	 echo "<INPUT TYPE='hidden' ID='digitizer' NAME='digitizer' VALUE='checked'/>";
+     } else {
+	 echo "<INPUT TYPE='hidden' ID='digitizer' NAME='digitizer' VALUE=''/>";
+     }
+     $current_or_last = "last run number was";
+     if ($status == "started") {
+       $current_or_last = "current run number is";
+     }
+     echo "The $current_or_last: $highest_id <br>";
+   }
+
+   if ($status == "stopped") { 
+     $detector_elements = mysqli_fetch_row(mysqli_query($con,"SELECT MAX(element_id) FROM element"))[0];
+     echo "<INPUT TYPE='hidden' NAME='detector_elements' ID='detector_elements' VALUE='$detector_elements' />";
+     $i = 0;
+     echo "<table><tr><td>";
+     echo "<h1>Set detector configuration:</h1>";
+     echo "<table>";
+     echo "<tr><th>In use<th>Name<th>Position [mm]<th>HV [V]<th>Cathode [thick=on]";
+     while ($i < $detector_elements) {
+       $f = $i+1;
+       $pos_value=mysqli_fetch_row(mysqli_query($con,"SELECT element_position FROM element_configuration WHERE element_id=$f AND pos_run_number='$highest_id' "))[0];
+       $hv_value=mysqli_fetch_row(mysqli_query($con,"SELECT element_HV FROM element_configuration WHERE element_id=$f AND pos_run_number='$highest_id' "))[0];
+       $cath_value=mysqli_fetch_row(mysqli_query($con,"SELECT element_photocathode_status FROM element_configuration WHERE element_id=$f AND pos_run_number='$highest_id' "))[0];
+;
+       if ($cath_value == 1) {
+          $cath_value = 'checked';
+       } else {
+          $cath_value = '';
+       }
+       $name=mysqli_fetch_row(mysqli_query($con,"SELECT description FROM element WHERE element_id=$f"))[0];
+       $idpos = 'pos_' . $f;
+       $idcheck = 'checkbox' . $f;
+       $idname = 'name' . $f;
+       $idhv = 'hv_' . $f;
+       $idcath = 'cath_' . $f;
+       $selected = '';
+       if (($hv_value != 0) || ($pos_value != 0)) {
+         $selected = 'CHECKED';
+       }
+       echo "<tr><td><input id='$idcheck' name='$idcheck' type='checkbox' onclick='enable()' $selected /><td><div id='$idname'>$name</div><td><input id='$idpos' name='$idpos' value='$pos_value' onchange='draw()' disabled>";
+       if (strpos($name, 'MCP') !== false) {
+         echo "<td><input id='$idhv' name='$idhv' value='$hv_value' disabled><td><input id='$idcath' name='$idcath' type='checkbox' $cath_value disabled>";
+       } else {
+         echo "<td><input id='$idhv' name='$idhv' value='0' type='hidden'><td><input id='$idcath' name='$idcath' type='hidden'>";
+       }
+       $i++;
+     }
+     echo "</table>";
 ?>
 
+<div id='setup'></div>
+<td>
+<h1>Set run configuration: </h1>
+<table><tr><td nowrap style="vertical-align: top">
+<table cellpadding="pixels" cellspacing="5" style="width: 100%">
+<tr><td nowrap><p>Choose the run type:<p>
+    <td nowrap><select name="tend" id="tend" onchange="sel()" >
+    <option>Choose an option</option>
+    <?php
+      if ($con != null) {
+        $query = mysqli_query($con,"SELECT run_type_description FROM run_type ORDER BY run_type_id"); 
+        while ($riga=mysqli_fetch_array($query)){ 
+          $type=$riga['run_type_description']; 
+          echo "<option value=\"$type\">$type</option>"; 
+        }
+      } else {
+        echo "<option value='fake run' selected>fake run</option>";
+      } 
+    ?> 
+   </select>
 
-<FORM METHOD="POST" ACTION="start.php?emulator=<?php echo ${emulator};?>" NAME="Qfrm">
-<input type="hidden" name="fragmented" value="true">
-
-<h1>Fill each field: </h1>
-
-<table cellpadding="pixels" cellspacing="10">
-<tr><td><p>Choose the run type:<p>
-<td><select name="tendina" id="tend" onclick="sel()" >
-  <option>Choose an option </option>
-<?php 
-$query = mysqli_query($con,"SELECT run_type_description FROM run_type ORDER BY run_type_id"); 
-while ($riga=mysqli_fetch_array($query)){ 
-    $type=$riga['run_type_description']; 
-    echo "<option value=\"$type\">$type</option>"; 
-} 
-?> 
-</select>
-<!-- &nbsp;&nbsp;&nbsp;&nbsp;Choose the pedestal frequency <INPUT
-name="ped_freq"size="20"> Hz</td></tr>
- <br>
--->
-
-<tr><td>
-  Number of events: </td><td><INPUT NAME="run_events" id="namebox"
-    size="30" VALUE="0"><br>    
-</td></tr>
-<tr>
-<td>Horizontal position of the table: </td><td><INPUT
-  NAME="table_oriz" size="30" id="namebox1" VALUE="0">mm
-  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Vertical position of the
-  table:<INPUT NAME="table_vert" size="30" id="namebox2" VALUE="0">mm<BR>
-</td></tr>
-<tr><td>
-DAQ Configuration: </td><td><input type="checkbox" 
-  name="adc265" value="ON" id="265box"> ADC 265<input type="checkbox" 
-  name="adc792" value="ON" id="792box"> ADC 792<input type="checkbox" 
-  name="tdc" value="ON" id="tdcbox"> TDC<input type="checkbox" 
-  name="digitizer" value="ON" id="dig_box"> DIGITIZER</td><br>
-</td></tr>
-<td>DAQ1 Gate: <input name="daq1" id="daq1" size="10"></td><br><td>DAQ2 Gate: <input name="daq2" id="daq2" size="10"> ns</td>
-<tr><td>Beam Particle:</td><td><input type="checkbox" 
-  name="electr" value="ON" id="el_box">electron<input type="checkbox" 
-  name="positr" value="ON" id="pos_box">positron<input type="checkbox" 
-  name="photon" value="ON" id="ph_box">photon</td></tr><br>
-<tr><td>Beam Energy:</td><td><input type="text" size="10"
-  name="nome" id="energy" VALUE="0">MeV; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Beam
-  Intensity:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" size="10" name="nome1" id="intensity" VALUE="0"></td><br>
-<tr><td>Beam Horizontal Width:</td><td><input type="text" 
-  size="10" name="nome2" id="bhw" VALUE="0">mm; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Beam Vertical Width:&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" size="10" name="nome3" id="bvw"VALUE="0">mm;</td><br>
-<tr><td>Beam Horizontal Tilt:</td><td><input type="text" size="10" name="nome4" id="bht" VALUE="0">&deg;; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Beam
-  Vertical Tilt:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" size="10" name="nome5" id="bvt" VALUE="0">&deg;.</td><br>
-  
-<tr><td>Comments:</td><td><INPUT NAME="user_comments" size="140"><BR>
-</td></tr>
+<tr><td nowrap>Number of events: 
+    <td nowrap><INPUT NAME="n_of_events" id="n_of_events"   size="30" TYPE="number" VALUE="<?php echo $num_events ?>">
+<tr><td nowrap>Position of the table: 
+    <td nowrap>Horizontal <INPUT NAME="thp" size="10" TYPE="number" id="thp" VALUE="<?php echo $table_h ?>"> mm
+    <td nowrap>Vertical   
+    <td nowrap><INPUT NAME="tvp" size="10" TYPE="number" id="tvp" VALUE="<?php echo $table_v ?>"> mm
+<tr><td nowrap>DAQ Configuration: 
+    <td nowrap colspan='4'>
+      <input type="checkbox" name="adc265"    id="adc265" <?php echo $adc265 ?> > ADC 265
+      <input type="checkbox" name="adc792"    id="adc792" <?php echo $adc792 ?> > ADC 792
+      <input type="checkbox" name="tdc"       id="tdc" <?php echo $tdc ?> > TDC
+      <input type="checkbox" name="digitizer" id="digitizer" <?php echo $digitizer ?>> DIGITIZER
+<tr><td nowrap>Gates: 
+  <td nowrap>DAQ1 <input name="daq_gate1" id="daq_gate1" TYPE="number" size="10" value="<?php echo $daq_gate1 ?>" > ns
+  <td nowrap>DAQ2
+  <td nowrap> <input name="daq_gate2" id="daq_gate2" TYPE="number" size="10" value="<?php echo $daq_gate2 ?>"> ns
+<tr id='beam_info_1' style='display: none;'><td nowrap>Beam Particle:
+  <td nowrap colspan='4'>
+    <div id='particle_sel'>
+    <input type="radio" name="particle" value="electron" id="electron" > electron 
+    <input type="radio" name="particle" value="positron" id="positron" > positron
+    <input type="radio" name="particle" value="photon"   id="photon"> photon
+    </div>
+<tr id='beam_info_2' style='display: none;'><td nowrap>Beam Energy:
+  <td nowrap><input type="text" size="10" TYPE="number" name="beam_energy" id="beam_energy_1" VALUE="<?php echo $beam_energy ?>"> MeV
+  <td nowrap>Beam Intensity:
+  <td nowrap><input type="text" size="10" TYPE="number" name="beam_intensity" id="beam_intensity_1" VALUE="<?php echo $beam_intensity ?>">
+<tr id='beam_info_3' style='display: none;'><td nowrap>Beam Horizontal Width:
+  <td nowrap><input type="text" size="10" TYPE="number" name="beam_hw" id="beam_hw_1" VALUE="<?php echo $beam_hw ?>"> mm
+  <td nowrap>Beam Vertical Width:
+  <td nowrap><input type="text" size="10" TYPE="number" name="beam_vw" id="beam_vw_1" VALUE="<?php echo $beam_vw ?>"> mm</td><br>
+<tr id='beam_info_4' style='display: none;'><td nowrap>Beam Horizontal Tilt:
+  <td nowrap><input type="text" size="10" TYPE="number" name="beam_ht" id="beam_ht_1" VALUE="<?php echo $beam_ht ?>"> &deg;
+  <td nowrap>Beam Vertical Tilt:
+  <td nowrap><input type="text" size="10" TYPE="number" name="beam_vt" id="beam_vt_1" VALUE="<?php echo $beam_vt ?>"> &deg;</td><br>
+<tr><td nowrap>Comments:
+  <td nowrap colspan='4'><INPUT NAME="user_comments" size="81" maxlength="140" VALUE="<?php echo $comment ?>">
 </table>
-<center>
-<INPUT TYPE="SUBMIT" onclick=" return confirmFunc()" VALUE='  Submit  '>
-</center>
+</td><td nowrap style="vertical-align: top;">
+</td></tr></table>    
+
+</table>
+<?php } ?>
+
+<noscript><div id="response"><h1>JavaScript is required for this demo.</h1></div></noscript>
+<CENTER>
+<?php
+   if (file_exists($config[acqstart])) {
+     if ($start_server == $server) {
+       echo "End of run comment<BR>";
+       echo "<input name='end_user_comment' id='end_user_comment' size='160' />";
+     }
+     pausebutton($start_server, $server);
+     stopbutton($start_server, $server);
+     giveup($start_server, $server);
+   } else if (file_exists($config[acqpause])) {
+     restartbutton($start_server, $server);
+     stopbutton($start_server, $server);
+     giveup($start_server, $server);
+   } else {
+     startbutton($type);
+   }
+
+   echo "</CENTER><P>";
+   dumpConfiguration();
+      
+?>
 
 </FORM>
 
-<p> <p>
+
+<p>
 
 <hr>
 <address></address>

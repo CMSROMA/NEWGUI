@@ -1,0 +1,43 @@
+th {
+  background-color: lightgrey;
+  text-align: left;
+  vertical-align: top;
+}
+
+td {
+  vertical-align: top;
+}
+
+table.setup {
+}
+
+table.setup tr {
+}
+
+table.setup td {
+  background-color: green;
+  color: white;
+  text-align: center;
+  vertical-align: top;
+}
+
+table.absorber td {
+  background-color: #C96333;
+  color: white;
+  text-align: center;
+  vertical-align: top;
+}
+
+pre {
+ font: 10px/1.5 Courier, "Courier New", mono;
+ background-color: #efefef; border: 1px solid #ccc;
+ width: 700px; margin: 7px; padding: 10px;
+ white-space: pre-wrap;
+ text-align: left;
+}
+
+plain {
+ font: 10px/1.5 Courier, "Courier New", mono;
+ white-space: pre-wrap;
+ text-align: left;
+}
