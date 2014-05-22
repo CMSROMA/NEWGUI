@@ -6,10 +6,10 @@
     <script src="jquery.min.js"></script>
     <script>
       $(document).ready(function() {
-      $("#results").load("AjaxErrorLog.php");
-      var refreshId = setInterval(function() {
-      $("#results").load("AjaxErrorLog.php").fadeIn("slow");
-      }, 2000); // refresh time (default = 2000 ms = 2 seconds)
+        $("#results").load("AjaxErrorLog.php");
+        var refreshId = setInterval(function() {
+          $("#results").load("AjaxErrorLog.php").fadeIn("slow");
+        }, 2000); // refresh time (default = 2000 ms = 2 seconds)
       });
     </script>
 
@@ -128,7 +128,6 @@ function draw() {
   // draw detector configuration
   //
   enable();
-
   var obj = document.getElementById("detector_elements");
   if (obj != null) {
     var numero = obj.value;
@@ -504,7 +503,9 @@ function draw() {
 
 <hr>
 <address></address>
-<!-- hhmts start -->Last modified: Fri Apr 18 09:51:33 CEST 2014 <!-- hhmts end -->
-
+<!-- hhmts start -->Last modified: Fri Apr 18 09:51:33 CEST 2014 <!-- hhmts end --><br>
+<span id='miniclock'></div>
+<div id='dafnestatus'></div>
+<iframe style="width:100%;" id='dafne' src='http://www.lnf.infn.it/acceleratori/status/get_dafne.php?get_par=0' />
 </body>
 </html>
